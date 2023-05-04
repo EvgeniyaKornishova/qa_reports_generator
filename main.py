@@ -19,7 +19,14 @@ from common import (
     PICTURES_PATH,
 )
 from confluence_export import get_tasks, get_main_tasks
-from jira_export import get_blockers, get_bugs, get_crits, get_blockers_link, get_crits_link, get_issues_statistic
+from jira_export import (
+    get_blockers,
+    get_bugs,
+    get_crits,
+    get_blockers_link,
+    get_crits_link,
+    get_issues_statistic,
+)
 from github_export import get_pull_requests_status, get_merged_prs
 from jenkins_export import get_latest_build_data, get_wml_report_link
 from charts_export import export_charts
@@ -109,7 +116,13 @@ def fill_task_lists(tree: etree.Element, task_lists: Dict[TaskType, str], tasks:
     fill_task_list(tree, task_lists[TaskType.PLANNED], planned_tasks)
 
 
-def fill_build_status_table(tree: etree.Element, project: Projects, build_data: Dict, blockers: Dict, crits: Dict):
+def fill_build_status_table(
+    tree: etree.Element,
+    project: Projects,
+    build_data: Dict,
+    blockers: Dict,
+    crits: Dict,
+):
     row_id = ids.BUILD_STATUS_TABLE_ROW[project]
     row = word.find_by_id(tree, row_id)
 
@@ -149,33 +162,36 @@ def fill_build_status_table(tree: etree.Element, project: Projects, build_data: 
         has_blockers = len(blockers[project]) > 0
         has_crits = len(crits[project]) > 0
 
-        if not has_blockers and not has_crits: # stable
+        if not has_blockers and not has_crits:  # stable
             content = word.Text(text="Stable", bold=True, hex_color="92D050")
-        elif has_blockers: # failed
+        elif has_blockers:  # failed
             content = word.Text(text="Failed", bold=True, hex_color="FF0000")
-        else: # unstable
+        else:  # unstable
             content = word.Text(text="Unstable", bold=True, hex_color="E36C0A")
 
         word.set_table_cell_value(cells[3], content)
-
 
     # 4 cell - Comment ########################
     # if has crits or blockers add link
     if project in blockers and project in crits:
         has_blockers = len(blockers[project]) > 0
         has_crits = len(crits[project]) > 0
-        
-        if not has_blockers and not has_crits: # stable
+
+        if not has_blockers and not has_crits:  # stable
             pass
-        elif has_blockers: # failed
+        elif has_blockers:  # failed
             word.clear_table_cell(cells[4])
             amount = len(blockers[project])
-            content = Link(url=get_blockers_link(project), text=f"Blocker issues ({amount})")
+            content = Link(
+                url=get_blockers_link(project), text=f"Blocker issues ({amount})"
+            )
             word.set_table_cell_value(cells[4], content)
-        else: # unstable
+        else:  # unstable
             word.clear_table_cell(cells[4])
             amount = len(crits[project])
-            content = Link(url=get_crits_link(project), text=f"Critical issues ({amount})")
+            content = Link(
+                url=get_crits_link(project), text=f"Critical issues ({amount})"
+            )
             word.set_table_cell_value(cells[4], content)
 
 
@@ -228,7 +244,7 @@ def remove_chart(tree, project, chart_type):
     # add note about chart absence
     note_text = ""
     if chart_type == ChartType.ISSUES_UPDATES_2W:
-        note_text = "No issue updates in 2 weeks"
+        note_text = "No issue updates in 3 weeks"
     else:
         note_text = "No unresolved issues"
 
@@ -310,30 +326,37 @@ def finalize_report():
 
 
 def get_issues_plot(project: Projects, report_date: datetime):
-    intervals, blockers_per_interval = get_issues_statistic(project, report_date, IssueType.BLOCKER) 
-    _, criticals_per_interval = get_issues_statistic(project, report_date, IssueType.CRITICAL) 
-    
+    intervals, blockers_per_interval = get_issues_statistic(
+        project, report_date, IssueType.BLOCKER
+    )
+    _, criticals_per_interval = get_issues_statistic(
+        project, report_date, IssueType.CRITICAL
+    )
+
     # create a scatter plot
     fig = go.Figure(
         [
             go.Scatter(
-                x = intervals,
-                y = blockers_per_interval,
+                x=intervals,
+                y=blockers_per_interval,
                 name="Blocker",
-                line_color="#FF5630"
+                line_color="#FF5630",
             ),
             go.Scatter(
                 x=intervals,
                 y=criticals_per_interval,
                 name="Critical",
-                line_color="#0065FF"
-            )
+                line_color="#0065FF",
+            ),
         ],
         layout=go.Layout(
             xaxis=dict(
-                tickmode='array',
+                tickmode="array",
                 tickvals=intervals,
-                ticktext=[datetime(year=d.year, month=d.month, day=d.day).strftime("%m-%d-%Y") for d in intervals],
+                ticktext=[
+                    datetime(year=d.year, month=d.month, day=d.day).strftime("%m-%d-%Y")
+                    for d in intervals
+                ],
                 tickangle=-45,
                 automargin=True,
                 showgrid=False,
@@ -344,12 +367,10 @@ def get_issues_plot(project: Projects, report_date: datetime):
                 gridcolor="#DADCE2",
                 linecolor="#DADCE2",
                 zeroline=False,
-                tickformat=',d'
+                tickformat=",d",
             ),
             width=1000,
-            font=dict(
-                size=12
-            ),
+            font=dict(size=12),
             font_family="Segoe UI",
             legend=dict(
                 orientation="h",
@@ -359,23 +380,16 @@ def get_issues_plot(project: Projects, report_date: datetime):
                 x=1,
                 font=dict(
                     size=16,
-                )
+                ),
             ),
-            margin=dict(
-                l=20,
-                r=20,
-                t=5,
-                b=20
-            ),
-            plot_bgcolor='rgba(0,0,0,0)'
+            margin=dict(l=20, r=20, t=5, b=20),
+            plot_bgcolor="rgba(0,0,0,0)",
         ),
     )
     # workaround to avoid yaxis label 0, 0.2, 0.4, 0.6, 0.8, 1
     max_value = max(max(criticals_per_interval), max(blockers_per_interval))
     if max_value < 4:
-        fig.update_yaxes(
-            tickvals = [*range(max_value+1)]
-        )
+        fig.update_yaxes(tickvals=[*range(max_value + 1)])
 
     # save plot
     path = PICTURES_PATH + f"/plot_{project}.png"
@@ -389,7 +403,7 @@ def main():
 
     # eval report dates
     report_date = datetime.today()
-    report_start_date = report_date - timedelta(weeks=2) + timedelta(days=1)
+    report_start_date = report_date - timedelta(weeks=3) + timedelta(days=1)
 
     # load document.xml (main xml file)
     tree = word.load_xml(word.DOCUMENT_PATH)
@@ -428,19 +442,16 @@ def main():
     found_issues = get_bugs(report_date)
 
     for project in found_issues:
-        if project == Projects.SOLIDWORKS: # skip solidworks in this table for now
+        if project == Projects.SOLIDWORKS:  # skip solidworks in this table for now
             continue
 
         table_cell_id = ids.SUMMARY_TABLE[project][SummaryTableColumn.FOUND_ISSUES]
         table_cell = word.find_by_id(tree, table_cell_id)
 
-        text = "Issues ({amount})".format(
-            amount=found_issues[project]["count"]
-        )
+        text = "Issues ({amount})".format(amount=found_issues[project]["count"])
         url = found_issues[project]["link"]
 
         word.set_table_cell_value(table_cell, Link(url=url, text=text))
-
 
     # Merged PRs
     for project in ids.SUMMARY_TABLE:
@@ -450,9 +461,7 @@ def main():
         merged_prs = get_merged_prs(project, report_date)
 
         url = merged_prs["link"]
-        text = "PRs ({amount})".format(
-            amount=merged_prs["count"]
-        )
+        text = "PRs ({amount})".format(amount=merged_prs["count"])
 
         word.set_table_cell_value(table_cell, Link(url=url, text=text))
 
@@ -532,7 +541,7 @@ def main():
     projects_bugs = get_bugs(report_date)
 
     for project in projects_bugs:
-        if project == Projects.SOLIDWORKS: # skip Solidworks bugs link for now
+        if project == Projects.SOLIDWORKS:  # skip Solidworks bugs link for now
             continue
 
         link_id = ids.BUGS_LINK_ID[project]
