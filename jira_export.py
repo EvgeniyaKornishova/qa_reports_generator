@@ -29,17 +29,19 @@ projects_jira_names = {
     Projects.SOLIDWORKS: "SV",
     Projects.HOUDINI: "RPRHOUD",
     Projects.HDRPR: "RPRUSD",
+    Projects.HYBRID: "RPRHYB",
 }
 
 projects_jira_open_statuses = {
-    Projects.MAYA_RPR: '"In Progress","Assessment","In Review","In Test","Open","Reopened"',
-    Projects.MAYA_USD: '"In Progress","Assessment","In Review","In Test","Open","Reopened"',
-    Projects.BLENDER_RPR: '"In Progress","Assessment","In Review","In Test","Open","Reopened"',
-    Projects.BLENDER_USD: '"In Progress","Assessment","In Review","In Test","Open","Reopened"',
-    Projects.RENDER_STUDIO: '"In Progress","Backlog","Blocked","Testing / QA","Waiting for merge"',
-    Projects.HOUDINI: '"Backlog","Blocked","In Progress","Selected for development","Testing / QA"',
-    Projects.HDRPR: '"Backlog","In Progress","In Testing","Selected for Development","To Do"',
-    Projects.SOLIDWORKS: '"Blocked","In Progress","In Test","Needs Merging","To Do"',
+    Projects.MAYA_RPR: '"In Progress","Assessment","In Review","In Test","Open","Reopened","Blocked"',
+    Projects.MAYA_USD: '"In Progress","Assessment","In Review","In Test","Open","Reopened","Blocked"',
+    Projects.BLENDER_RPR: '"In Progress","Assessment","In Review","In Test","Open","Reopened","Blocked"',
+    Projects.BLENDER_USD: '"In Progress","Assessment","In Review","In Test","Open","Reopened","Blocked"',
+    Projects.RENDER_STUDIO: '"In Progress","Backlog","Blocked","Testing / QA","Waiting for merge","Blocked"',
+    Projects.HOUDINI: '"Backlog","Blocked","In Progress","Selected for development","Testing / QA","Blocked"',
+    Projects.HDRPR: '"Backlog","In Progress","In Testing","Selected for Development","To Do","Blocked"',
+    Projects.SOLIDWORKS: '"Blocked","In Progress","In Test","Needs Merging","To Do","Blocked"',
+    Projects.HYBRID: '"Under Review", Assessment, Backlog, Blocked, "In Progress", "In Review", "In Test", Open, Reopened, "Selected for development", "Testing / QA", "To Do"',
 }
 
 
@@ -208,20 +210,22 @@ def get_issues_statistic(project: Projects, report_date: datetime, type: IssueTy
 
 
 if __name__ == "__main__":
-    print("Bugs: ")
-    bugs = get_bugs(datetime.today())
-    for project in projects_jira_names:
-        print(projects_jira_names[project] + ": ")
-        print(json.dumps(bugs[project], indent=4))
+    # print("Bugs: ")
+    # bugs = get_bugs(datetime.today())
+    # for project in projects_jira_names:
+    #     print(projects_jira_names[project] + ": ")
+    #     print(json.dumps(bugs[project], indent=4))
 
-    print("Blockers:")
-    blockers = get_blockers()
-    for project in blockers:
-        print(projects_jira_names[project])
-        print(json.dumps(blockers[project], indent=4))
+    # print("Blockers:")
+    # blockers = get_blockers()
+    # for project in blockers:
+    #     print(projects_jira_names[project])
+    #     print(json.dumps(blockers[project], indent=4))
 
-    print("Criticals:")
-    crits = get_crits()
-    for project in crits:
-        print(projects_jira_names[project])
-        print(json.dumps(crits[project], indent=4))
+    # print("Criticals:")
+    # crits = get_crits()
+    # for project in crits:
+    #     print(projects_jira_names[project])
+    #     print(json.dumps(crits[project], indent=4))
+
+    get_issues_statistic(Projects.MAYA_USD, datetime.today(), IssueType.BLOCKER)

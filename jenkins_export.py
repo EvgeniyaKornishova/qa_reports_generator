@@ -30,6 +30,7 @@ PROJECT_TO_JOB_MAPPING: Dict[Projects, Dict[str, str]] = {
         "CPU": "job/BlenderHIP/job/BlenderHIP-WeeklyHIP_CPU",
         "CUDA": "job/BlenderHIP/job/BlenderHIP-WeeklyHIP_CUDA",
     },
+    Projects.HYBRID: {},
 }
 
 

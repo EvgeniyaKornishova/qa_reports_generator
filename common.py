@@ -26,6 +26,7 @@ class Projects(Enum):
     ANARI = 11
     BLENDER_HIP = 12
     WML = 13
+    HYBRID = 14
 
 
 class ChartType(Enum):
@@ -37,10 +38,12 @@ class TaskType(Enum):
     COMPLETED = 1
     PLANNED = 2
 
+
 class SummaryTableColumn(Enum):
     FOUND_ISSUES = 1
     MERGED_PRS = 2
 
+
 class IssueType(Enum):
-    BLOCKER=1
-    CRITICAL=2
+    BLOCKER = 1
+    CRITICAL = 2
